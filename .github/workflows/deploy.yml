@@ -35,16 +35,6 @@ jobs:
       - name: Build
         run: npm run build
 
-      # - name: Copy static assets
-      #   run: |
-      #     mkdir -p dist/css
-      #     mkdir -p dist/lib
-      #     mkdir -p dist/assets
-      #     cp -r src/index.html dist/
-      #     cp -r src/css/* dist/css/
-      #     cp -r src/lib/* dist/lib/
-      #     cp -r assets/* dist/assets/ || true
-
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

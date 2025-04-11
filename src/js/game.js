@@ -29,12 +29,26 @@ class Game {
       this.handleMouseDown = this.handleMouseDown.bind(this);
       this.handleMouseMove = this.handleMouseMove.bind(this);
       this.handleMouseUp = this.handleMouseUp.bind(this);
+      this.handleTouchStart = this.handleTouchStart.bind(this);
+      this.handleTouchMove = this.handleTouchMove.bind(this);
+      this.handleTouchEnd = this.handleTouchEnd.bind(this);
       this.update = this.update.bind(this);
 
-      // Setup event listeners for drag and drop
+      // Setup event listeners for drag and drop (mouse events)
       window.addEventListener("mousedown", this.handleMouseDown);
       window.addEventListener("mousemove", this.handleMouseMove);
       window.addEventListener("mouseup", this.handleMouseUp);
+
+      // Setup event listeners for touch devices
+      window.addEventListener("touchstart", this.handleTouchStart, {
+        passive: false,
+      });
+      window.addEventListener("touchmove", this.handleTouchMove, {
+        passive: false,
+      });
+      window.addEventListener("touchend", this.handleTouchEnd, {
+        passive: false,
+      });
 
       this.resetButton = document.getElementById("reset-button");
       this.diskSlider = document.getElementById("disk-slider");
@@ -373,13 +387,14 @@ class Game {
             // Create and display confetti
             this.createConfetti();
 
-            // Set up button event listeners
-            playAgainBtn.addEventListener("click", () => {
+            // Function to handle play again action
+            const playAgainAction = () => {
               congratOverlay.classList.remove("visible");
               this.resetGame();
-            });
+            };
 
-            nextLevelBtn.addEventListener("click", () => {
+            // Function to handle next level action
+            const nextLevelAction = () => {
               congratOverlay.classList.remove("visible");
               // Increase disk count by 1 for next level (up to max 8)
               const newDiskCount = Math.min(8, this.diskCount + 1);
@@ -388,11 +403,34 @@ class Game {
               // Update disk slider UI
               const diskSlider = document.getElementById("disk-slider");
               const diskValue = document.getElementById("disk-value");
-              diskSlider.value = newDiskCount;
-              diskValue.textContent = newDiskCount;
+              if (diskSlider && diskValue) {
+                diskSlider.value = newDiskCount;
+                diskValue.textContent = newDiskCount;
+              }
 
               // Reset the game with new disk count
               this.resetGame();
+            };
+
+            // Remove any existing event listeners (to prevent duplicates)
+            playAgainBtn.removeEventListener("click", playAgainAction);
+            nextLevelBtn.removeEventListener("click", nextLevelAction);
+            playAgainBtn.removeEventListener("touchend", playAgainAction);
+            nextLevelBtn.removeEventListener("touchend", nextLevelAction);
+
+            // Set up click event listeners for desktop
+            playAgainBtn.addEventListener("click", playAgainAction);
+            nextLevelBtn.addEventListener("click", nextLevelAction);
+
+            // Add touch event listeners for mobile
+            playAgainBtn.addEventListener("touchend", (e) => {
+              e.preventDefault(); // Prevent default behavior
+              playAgainAction();
+            });
+
+            nextLevelBtn.addEventListener("touchend", (e) => {
+              e.preventDefault(); // Prevent default behavior
+              nextLevelAction();
             });
           }, 500);
         }
@@ -449,6 +487,162 @@ class Game {
         // This method could be used for animations, etc.
     }
     
+    // Touch event handlers
+    handleTouchStart(event) {
+      if (this.isAnimating || this.isGameComplete) return;
+
+      // Prevent default to avoid scrolling
+      event.preventDefault();
+      
+      if (event.touches.length !== 1) return;
+
+      const touch = event.touches[0];
+      
+      // Calculate touch position in normalized device coordinates
+      this.mouse.x = (touch.clientX / window.innerWidth) * 2 - 1;
+      this.mouse.y = -(touch.clientY / window.innerHeight) * 2 + 1;
+
+      // Cast a ray from the camera to the touch position
+      this.raycaster.setFromCamera(this.mouse, this.camera);
+
+      // First check for intersections with disks
+      const diskMeshes = this.disks.map((disk) => disk.mesh);
+      const diskIntersects = this.raycaster.intersectObjects(diskMeshes);
+
+      if (diskIntersects.length > 0) {
+        const clickedDiskMesh = diskIntersects[0].object;
+        const clickedDisk = clickedDiskMesh.userData.disk;
+
+        // Find which tower the disk belongs to
+        let sourceTower = null;
+        for (const tower of this.towers) {
+          if (
+            tower.disks.includes(clickedDisk) &&
+            clickedDisk === tower.getTopDisk()
+          ) {
+            sourceTower = tower;
+            break;
+          }
+        }
+
+        // Only allow dragging the top disk of any tower
+        if (sourceTower) {
+          // Start dragging
+          this.isDragging = true;
+          this.draggedDisk = clickedDisk;
+          this.draggedTower = sourceTower;
+          this.originalDiskPosition = clickedDiskMesh.position.clone();
+
+          // Calculate touch offset from disk center
+          const intersectionPoint = diskIntersects[0].point;
+          this.mouseOffset
+            .copy(intersectionPoint)
+            .sub(clickedDiskMesh.position);
+          this.mouseOffset.y = 0; // Only allow horizontal dragging
+
+          // Position drag plane at the disk's height
+          this.dragPlane.position.y = clickedDiskMesh.position.y;
+
+          // Remove disk from tower for dragging
+          sourceTower.removeTopDisk();
+
+          // Visual feedback - make the disk slightly transparent while dragging
+          clickedDiskMesh.material.transparent = true;
+          clickedDiskMesh.material.opacity = 0.7;
+
+          // Move disk slightly higher while dragging
+          clickedDiskMesh.position.y += 1;
+        }
+      } else {
+        // For backwards compatibility, allow tower touching too
+        const towerIntersects = this.raycaster.intersectObjects(
+          this.towers.map((tower) => tower.clickArea)
+        );
+
+        if (towerIntersects.length > 0) {
+          const clickedTower = towerIntersects[0].object.userData.tower;
+          this.handleTowerClick(clickedTower);
+        }
+      }
+    }
+    
+    handleTouchMove(event) {
+      if (!this.isDragging || !this.draggedDisk) return;
+      
+      // Prevent default to avoid scrolling
+      event.preventDefault();
+      
+      if (event.touches.length !== 1) return;
+
+      const touch = event.touches[0];
+      
+      // Update touch position
+      this.mouse.x = (touch.clientX / window.innerWidth) * 2 - 1;
+      this.mouse.y = -(touch.clientY / window.innerHeight) * 2 + 1;
+      
+      // Cast ray to the drag plane
+      this.raycaster.setFromCamera(this.mouse, this.camera);
+      const intersects = this.raycaster.intersectObject(this.dragPlane);
+      
+      if (intersects.length > 0) {
+        // Calculate new position for the disk
+        const newPosition = intersects[0].point.clone().sub(this.mouseOffset);
+        
+        // Keep the disk at the same height and only move horizontally
+        newPosition.y = this.draggedDisk.mesh.position.y;
+        
+        // Update disk position
+        this.draggedDisk.mesh.position.copy(newPosition);
+      }
+    }
+    
+    handleTouchEnd(event) {
+      // Prevent default behavior
+      event.preventDefault();
+      
+      if (!this.isDragging || !this.draggedDisk) return;
+
+      // Find the closest tower to the disk
+      let closestTower = null;
+      let minDistance = Infinity;
+
+      for (const tower of this.towers) {
+        const distance = Math.abs(
+          this.draggedDisk.mesh.position.x - tower.position.x
+        );
+        if (distance < minDistance) {
+          minDistance = distance;
+          closestTower = tower;
+        }
+      }
+
+      // Check if the disk can be added to the closest tower
+      if (closestTower && closestTower.canAddDisk(this.draggedDisk)) {
+        // Valid move, add disk to the new tower
+        closestTower.addDisk(this.draggedDisk);
+
+        // Increment move counter
+        this.moveCount++;
+        this.updateMoveCounter();
+
+        // Check for win condition
+        this.checkWinCondition();
+      } else {
+        // Invalid move, return disk to original tower
+        this.draggedTower.addDisk(this.draggedDisk);
+      }
+
+      // Reset disk appearance
+      this.draggedDisk.mesh.material.transparent = false;
+      this.draggedDisk.mesh.material.opacity = 1.0;
+
+      // Reset dragging state
+      this.isDragging = false;
+      this.draggedDisk = null;
+      this.draggedTower = null;
+      this.originalDiskPosition = null;
+    }
+    
     // Resize handler
     handleResize() {
         // Nothing specific to resize for the game logic
@@ -459,6 +653,9 @@ class Game {
         window.removeEventListener("mousedown", this.handleMouseDown);
         window.removeEventListener("mousemove", this.handleMouseMove);
         window.removeEventListener("mouseup", this.handleMouseUp);
+        window.removeEventListener("touchstart", this.handleTouchStart);
+        window.removeEventListener("touchmove", this.handleTouchMove);
+        window.removeEventListener("touchend", this.handleTouchEnd);
         this.resetButton.removeEventListener("click", () => this.resetGame());
         this.diskSlider.removeEventListener("input", () => {});
 
