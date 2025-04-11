@@ -32,6 +32,8 @@ class Game {
       this.handleTouchStart = this.handleTouchStart.bind(this);
       this.handleTouchMove = this.handleTouchMove.bind(this);
       this.handleTouchEnd = this.handleTouchEnd.bind(this);
+      this.resetGame = this.resetGame.bind(this);
+      this.handleDiskSliderChange = this.handleDiskSliderChange.bind(this);
       this.update = this.update.bind(this);
 
       // Setup event listeners for drag and drop (mouse events)
@@ -55,13 +57,24 @@ class Game {
       this.diskValue = document.getElementById("disk-value");
       this.moveCounter = document.getElementById("move-counter");
 
-      this.resetButton.addEventListener("click", () => this.resetGame());
-      this.diskSlider.addEventListener("input", () => {
+      // For Reset button: add both click and touch event listeners
+      this.resetButton.addEventListener("click", this.resetGame);
+      this.resetButton.addEventListener("touchend", (e) => {
+        e.preventDefault(); // Prevent default behavior
+        this.resetGame();
+      });
+
+      // For Disk slider: create a handler function for all input events
+      this.handleDiskSliderChange = () => {
         const newValue = parseInt(this.diskSlider.value);
         this.diskValue.textContent = newValue;
         this.diskCount = newValue;
         this.resetGame();
-      });
+      };
+
+      // Add event listeners for disk slider (input works for both mouse and touch)
+      this.diskSlider.addEventListener("input", this.handleDiskSliderChange);
+      this.diskSlider.addEventListener("change", this.handleDiskSliderChange); // For devices where input might not fire
 
       // Create a drag plane for calculating mouse position in 3D space
       const planeGeometry = new THREE.PlaneGeometry(50, 50);
@@ -656,8 +669,16 @@ class Game {
         window.removeEventListener("touchstart", this.handleTouchStart);
         window.removeEventListener("touchmove", this.handleTouchMove);
         window.removeEventListener("touchend", this.handleTouchEnd);
-        this.resetButton.removeEventListener("click", () => this.resetGame());
-        this.diskSlider.removeEventListener("input", () => {});
+        this.resetButton.removeEventListener("click", this.resetGame);
+        this.resetButton.removeEventListener("touchend", this.resetGame);
+        this.diskSlider.removeEventListener(
+          "input",
+          this.handleDiskSliderChange
+        );
+        this.diskSlider.removeEventListener(
+          "change",
+          this.handleDiskSliderChange
+        );
 
         // Remove all towers and disks
         for (const tower of this.towers) {
