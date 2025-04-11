@@ -1,0 +1,26 @@
+{
+  "name": "tower-of-hanoi-3d",
+  "version": "1.0.0",
+  "description": "A 3D implementation of the Tower of Hanoi game that runs in the browser.",
+  "main": "src/js/main.js",
+  "scripts": {
+    "start": "live-server src",
+    "build": "webpack --mode production"
+  },
+  "dependencies": {
+    "three": "^0.132.2"
+  },
+  "devDependencies": {
+    "webpack": "^5.64.4",
+    "webpack-cli": "^4.9.1",
+    "live-server": "^1.2.1"
+  },
+  "keywords": [
+    "tower of hanoi",
+    "3d",
+    "game",
+    "javascript"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}

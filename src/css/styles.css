@@ -1,0 +1,239 @@
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+    background-color: #222;
+    color: white;
+}
+
+canvas {
+    display: block;
+}
+
+h1 {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #333;
+    font-family: Arial, sans-serif;
+    font-size: 2em;
+    text-align: center;
+}
+
+.tower {
+    position: absolute;
+    bottom: 0;
+    width: 100px;
+    height: 300px;
+    background-color: #8B4513; /* wood color */
+    border-radius: 10px;
+}
+
+.disk {
+    position: absolute;
+    height: 20px;
+    border-radius: 5px;
+    transition: transform 0.3s ease;
+}
+
+.disk-1 {
+    background-color: #ff6347; /* tomato */
+    width: 80px;
+}
+
+.disk-2 {
+    background-color: #4682b4; /* steelblue */
+    width: 100px;
+}
+
+.disk-3 {
+    background-color: #32cd32; /* limegreen */
+    width: 120px;
+}
+
+.disk-4 {
+    background-color: #ffd700; /* gold */
+    width: 140px;
+}
+
+.disk-5 {
+    background-color: #ff69b4; /* hotpink */
+    width: 160px;
+}
+
+#game-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+#ui-container {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 15px;
+    border-radius: 10px;
+    z-index: 100;
+    user-select: none;
+}
+
+#controls {
+    margin-bottom: 15px;
+}
+
+#reset-button {
+    padding: 8px 16px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+#reset-button:hover {
+    background-color: #2980b9;
+}
+
+#disk-count {
+    margin-top: 10px;
+}
+
+#disk-slider {
+    width: 100%;
+    margin-top: 5px;
+}
+
+#moves {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.instructions {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 15px;
+    border-radius: 10px;
+    max-width: 300px;
+}
+
+/* Add styles for the congratulation screen */
+.congratulations-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+    pointer-events: none;
+}
+
+.congratulations-overlay.visible {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.congratulations-container {
+    background: linear-gradient(135deg, #2c3e50, #4a69bd);
+    border-radius: 15px;
+    padding: 30px 50px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    color: white;
+    max-width: 90%;
+    transform: scale(0.8);
+    transition: transform 0.5s cubic-bezier(0.18, 1.25, 0.6, 1);
+}
+
+.congratulations-overlay.visible .congratulations-container {
+    transform: scale(1);
+}
+
+.congratulations-container h2 {
+    font-size: 3em;
+    margin-bottom: 20px;
+    color: #ffd700;
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    animation: pulse 2s infinite;
+}
+
+.congratulations-container p {
+    font-size: 1.5em;
+    margin: 10px 0;
+    color: #fff;
+}
+
+.congratulations-container .stats {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 15px;
+    margin: 20px 0;
+    font-size: 1.2em;
+}
+
+.congratulations-container .buttons {
+    margin-top: 25px;
+}
+
+.congratulations-container button {
+    background-color: #ffd700;
+    color: #2c3e50;
+    border: none;
+    border-radius: 50px;
+    padding: 12px 25px;
+    font-size: 1.2em;
+    font-weight: bold;
+    margin: 0 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.congratulations-container button:hover {
+    background-color: #ffec42;
+    transform: translateY(-3px);
+    box-shadow: 0 7px 20px rgba(0, 0, 0, 0.3);
+}
+
+.congratulations-container button:active {
+    transform: translateY(0);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+.confetti {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background-color: #f00;
+    opacity: 0.8;
+    pointer-events: none;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Minimum moves calculation info */
+.min-moves-info {
+    font-style: italic;
+    font-size: 0.9em;
+    color: #aaa;
+    margin-top: 10px;
+}

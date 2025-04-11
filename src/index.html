@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tower of Hanoi 3D</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div id="game-container"></div>
+    <div id="ui-container">
+        <div id="controls">
+            <button id="reset-button">Reset Game</button>
+            <div id="disk-count">
+                <label for="disk-slider">Number of Disks: <span id="disk-value">3</span></label>
+                <input type="range" id="disk-slider" min="3" max="8" value="3">
+            </div>
+        </div>
+        <div id="moves">Moves: <span id="move-counter">0</span></div>
+    </div>
+    
+    <!-- Add the congratulations overlay -->
+    <div id="congratulations-overlay" class="congratulations-overlay">
+        <div class="congratulations-container">
+            <h2>Congratulations!</h2>
+            <p>You solved the Tower of Hanoi puzzle!</p>
+            <div class="stats">
+                <p>Moves: <span id="final-move-count">0</span></p>
+                <p>Minimum possible moves: <span id="min-moves">0</span></p>
+                <p class="min-moves-info">(The formula is 2<sup>n</sup> - 1, where n is the number of disks)</p>
+                <p>Your efficiency: <span id="efficiency">100%</span></p>
+            </div>
+            <div class="buttons">
+                <button id="play-again-btn">Play Again</button>
+                <button id="next-level-btn">Next Level</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Load Three.js first -->
+    <script src="lib/three.min.js"></script>
+    
+    <!-- Load utility scripts -->
+    <script src="utils/animation.js"></script>
+    
+    <!-- Load game components -->
+    <script src="js/disk.js"></script>
+    <script src="js/towers.js"></script>
+    <script src="js/game.js"></script>
+    
+    <!-- Load main script last -->
+    <script src="js/main.js"></script>
+</body>
+</html>
