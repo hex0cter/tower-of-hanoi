@@ -80,13 +80,14 @@ h1 {
     border-radius: 10px;
     z-index: 100;
     user-select: none;
+    max-width: 240px;
 }
 
 #controls {
     margin-bottom: 15px;
 }
 
-#reset-button {
+#reset-button, #test-button {
     padding: 8px 16px;
     background-color: #3498db;
     color: white;
@@ -96,10 +97,15 @@ h1 {
     font-size: 16px;
     margin-bottom: 10px;
     width: 100%;
+    touch-action: manipulation; /* Prevent double-tap zoom */
 }
 
-#reset-button:hover {
+#reset-button:hover, #test-button:hover {
     background-color: #2980b9;
+}
+
+#reset-button:active, #test-button:active {
+    background-color: #1f6aa5;
 }
 
 #disk-count {
@@ -202,6 +208,7 @@ h1 {
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    touch-action: manipulation; /* Better touch experience */
 }
 
 .congratulations-container button:hover {
@@ -236,4 +243,89 @@ h1 {
     font-size: 0.9em;
     color: #aaa;
     margin-top: 10px;
+}
+
+/* Media queries for mobile responsiveness */
+@media (max-width: 767px) {
+    #ui-container {
+        top: 10px;
+        right: 10px;
+        padding: 10px;
+        max-width: 150px;
+    }
+    
+    #reset-button, #test-button {
+        padding: 10px;
+        font-size: 14px;
+    }
+    
+    .instructions {
+        bottom: 10px;
+        left: 10px;
+        padding: 10px;
+        max-width: 180px;
+        font-size: 0.9em;
+    }
+    
+    .instructions h3 {
+        font-size: 1.1em;
+        margin: 5px 0;
+    }
+    
+    .instructions ul {
+        padding-left: 15px;
+        margin: 5px 0;
+    }
+    
+    .congratulations-container {
+        padding: 20px;
+    }
+    
+    .congratulations-container h2 {
+        font-size: 2em;
+    }
+    
+    .congratulations-container p {
+        font-size: 1.2em;
+    }
+    
+    .congratulations-container .buttons {
+        margin-top: 15px;
+    }
+    
+    .congratulations-container button {
+        padding: 10px 20px;
+        font-size: 1em;
+        margin: 5px;
+        display: block;
+        width: 100%;
+    }
+    
+    /* Stack buttons on mobile */
+    .congratulations-container .buttons {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+/* Extra small devices */
+@media (max-width: 480px) {
+    #ui-container {
+        max-width: 120px;
+    }
+    
+    #reset-button, #test-button {
+        font-size: 12px;
+        padding: 8px;
+    }
+    
+    .instructions {
+        max-width: 150px;
+        font-size: 0.8em;
+    }
+    
+    #moves {
+        font-size: 14px;
+    }
 }
