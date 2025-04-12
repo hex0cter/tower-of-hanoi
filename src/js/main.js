@@ -90,6 +90,24 @@ function init() {
   // Initialize the game
   game = new Game(scene, camera);
 
+  // Add event listener for the Test Game button
+  const testButton = document.getElementById("test-button");
+  if (testButton) {
+    testButton.addEventListener("click", () => {
+      // Make sure we reset the game first to start from the beginning
+      game.resetGame();
+      // Then solve the puzzle automatically
+      game.solveAutomatically();
+    });
+
+    // Also add a touch event for mobile devices
+    testButton.addEventListener("touchend", (e) => {
+      e.preventDefault(); // Prevent default behavior
+      game.resetGame();
+      game.solveAutomatically();
+    });
+  }
+
   // Event listener for window resize
   window.addEventListener("resize", onWindowResize, false);
 

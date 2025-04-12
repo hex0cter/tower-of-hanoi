@@ -86,7 +86,7 @@ h1 {
     margin-bottom: 15px;
 }
 
-#reset-button {
+#reset-button, #test-button {
     padding: 8px 16px;
     background-color: #3498db;
     color: white;
@@ -98,7 +98,7 @@ h1 {
     width: 100%;
 }
 
-#reset-button:hover {
+#reset-button:hover, #test-button:hover {
     background-color: #2980b9;
 }
 
