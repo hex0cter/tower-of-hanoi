@@ -23,15 +23,16 @@ function init() {
   const backgroundTexture = new THREE.CanvasTexture(canvas);
   scene.background = backgroundTexture;
 
-  // Create the camera
+  // Create the camera with responsive positioning
   camera = new THREE.PerspectiveCamera(
     60,
     window.innerWidth / window.innerHeight,
     0.1,
     1000
   );
-  camera.position.set(0, 10, 15);
-  camera.lookAt(0, 2, 0);
+  
+  // Set camera position based on screen size
+  adjustCameraForScreenSize();
 
   // Create the renderer
   renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -89,7 +90,7 @@ function init() {
 
   // Initialize the game
   game = new Game(scene, camera);
-
+  
   // Add event listener for the Test Game button
   const testButton = document.getElementById("test-button");
   if (testButton) {
@@ -99,7 +100,7 @@ function init() {
       // Then solve the puzzle automatically
       game.solveAutomatically();
     });
-
+    
     // Also add a touch event for mobile devices
     testButton.addEventListener("touchend", (e) => {
       e.preventDefault(); // Prevent default behavior
@@ -115,9 +116,46 @@ function init() {
   animate();
 }
 
-// Create a realistic wooden table
+// Function to adjust camera position and field of view based on screen size
+function adjustCameraForScreenSize() {
+  // Get device pixel ratio to handle high-DPI displays
+  const pixelRatio = window.devicePixelRatio || 1;
+  
+  // Base values
+  let cameraZ = 15;
+  let cameraY = 10;
+  let cameraLookY = 2;
+  
+  // For mobile devices (portrait mode)
+  if (window.innerWidth < 768) {
+    // Increase camera distance for mobile devices
+    cameraZ = 20;
+    cameraY = 12;
+    
+    // Further adjustments for very small screens
+    if (window.innerWidth < 480) {
+      cameraZ = 25;
+      cameraY = 14;
+    }
+  }
+  
+  // For tablets in landscape mode
+  else if (window.innerWidth < 1024 && window.innerWidth > window.innerHeight) {
+    cameraZ = 18;
+    cameraY = 11;
+  }
+  
+  // Set camera position and target
+  camera.position.set(0, cameraY, cameraZ);
+  camera.lookAt(0, cameraLookY, 0);
+}
+
+// Create a realistic wooden table with responsive sizing
 function createRealisticTable() {
-  const tableSize = 30;
+  // Calculate table size based on screen width
+  // Use smaller table for mobile devices
+  const baseTableSize = 30;
+  const tableSize = window.innerWidth < 768 ? baseTableSize * 0.7 : baseTableSize;
 
   // Create a kid-friendly playground-style base instead of wooden table
   const tableTopGeometry = new THREE.BoxGeometry(tableSize, 1, tableSize);
@@ -172,7 +210,7 @@ function createRealisticTable() {
   tableTop.castShadow = true;
   scene.add(tableTop);
 
-  // Create colorful edge borders
+  // Create colorful edge borders - scale down for mobile
   const borderSize = 0.8;
   const borderHeight = 1.2;
   const createBorder = (width, depth, x, z, color) => {
@@ -311,7 +349,13 @@ function createRealisticTable() {
   }
 
   // Add fun decorations that kids would enjoy
-  addPlaygroundDecorItems(tableSize);
+  // Only add decorations for larger screens to reduce complexity on mobile
+  if (window.innerWidth >= 768) {
+    addPlaygroundDecorItems(tableSize);
+  } else {
+    // For mobile, add fewer decorative items
+    addSimplifiedPlaygroundDecor(tableSize);
+  }
 }
 
 // Add kid-friendly decorative items to the playground
@@ -657,7 +701,7 @@ function createHotAirBalloon() {
   // ---------- BALLOON ENVELOPE (TOP PART) ----------
   // Balloon colors - bright, alternating panels
   const balloonColors = [
-    0xff2d00, // Red
+     0xff2d00, // Red
     0xff9500, // Orange
     0xffea00, // Yellow
     0x4caf50, // Green
@@ -943,8 +987,14 @@ function createHotAirBalloon() {
 
 // Handle window resize
 function onWindowResize() {
+  // Update camera aspect ratio
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
+  
+  // Adjust camera position for new screen size
+  adjustCameraForScreenSize();
+  
+  // Update renderer size
   renderer.setSize(window.innerWidth, window.innerHeight);
 
   if (game) {
@@ -1017,6 +1067,65 @@ function animate() {
   }
 
   renderer.render(scene, camera);
+}
+
+// Simplified decoration function for mobile devices
+function addSimplifiedPlaygroundDecor(tableSize) {
+  // Add just one or two simple decorations for mobile devices
+  // Add a rainbow arc as it's colorful and compact
+  const rainbowGroup = new THREE.Group();
+  rainbowGroup.position.set(-tableSize / 3, 0, -tableSize / 3);
+  rainbowGroup.scale.set(0.6, 0.6, 0.6); // Scale down for mobile
+
+  const rainbowColors = [
+    0xff0000, // Red
+    0xff7f00, // Orange
+    0xffff00, // Yellow
+    0x00ff00, // Green
+    0x0000ff, // Blue
+    0x4b0082, // Indigo
+    0x9400d3, // Violet
+  ];
+
+  // Create rainbow arcs - fewer segments for better performance
+  for (let i = 0; i < rainbowColors.length; i++) {
+    const arcRadius = 2.5 - i * 0.25;
+    const arcThickness = 0.15;
+
+    // Create arc geometry with fewer points for better mobile performance
+    const arcCurve = new THREE.EllipseCurve(
+      0, 0,           // Center x, y
+      arcRadius, arcRadius, // x radius, y radius
+      0, Math.PI,    // Start angle, end angle
+      false,         // Clockwise
+      0              // Rotation
+    );
+
+    const arcPoints = arcCurve.getPoints(12); // Fewer points for mobile
+    const arcGeometry = new THREE.TubeGeometry(
+      new THREE.CatmullRomCurve3(
+        arcPoints.map(p => new THREE.Vector3(p.x, 0, p.y))
+      ),
+      12,           // Fewer segments
+      arcThickness,  // Tube radius
+      6,            // Fewer radial segments
+      false         // Closed
+    );
+
+    const arcMaterial = new THREE.MeshStandardMaterial({
+      color: rainbowColors[i],
+      roughness: 0.6,
+      metalness: 0.3,
+    });
+
+    const arc = new THREE.Mesh(arcGeometry, arcMaterial);
+    arc.rotation.y = Math.PI / 2;
+    arc.position.y = arcThickness + i * arcThickness * 2;
+
+    rainbowGroup.add(arc);
+  }
+
+  scene.add(rainbowGroup);
 }
 
 // Start the game when the page loads
