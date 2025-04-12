@@ -84,8 +84,19 @@ class Game {
       tower.remove();
     }
 
-    // Create three towers
-    const spacing = 4;
+    // Create three towers with responsive spacing
+    // Reduce spacing on mobile screens
+    let spacing = 4; // Default spacing for desktop
+    
+    // Make spacing responsive based on screen width
+    if (window.innerWidth < 768) {
+      spacing = 2.5; // Reduced spacing for tablets
+      
+      if (window.innerWidth < 480) {
+        spacing = 2.0; // Even smaller spacing for phones
+      }
+    }
+    
     this.towers = [];
 
     // Add a common base plate for all towers

@@ -118,9 +118,6 @@ function init() {
 
 // Function to adjust camera position and field of view based on screen size
 function adjustCameraForScreenSize() {
-  // Get device pixel ratio to handle high-DPI displays
-  const pixelRatio = window.devicePixelRatio || 1;
-  
   // Base values
   let cameraZ = 15;
   let cameraY = 10;
@@ -128,21 +125,21 @@ function adjustCameraForScreenSize() {
   
   // For mobile devices (portrait mode)
   if (window.innerWidth < 768) {
-    // Increase camera distance for mobile devices
-    cameraZ = 20;
-    cameraY = 12;
+    // Adjust for mobile - bring elements closer
+    cameraZ = 13;
+    cameraY = 8;
     
     // Further adjustments for very small screens
     if (window.innerWidth < 480) {
-      cameraZ = 25;
-      cameraY = 14;
+      cameraZ = 11;
+      cameraY = 7;
     }
   }
   
   // For tablets in landscape mode
   else if (window.innerWidth < 1024 && window.innerWidth > window.innerHeight) {
-    cameraZ = 18;
-    cameraY = 11;
+    cameraZ = 14;
+    cameraY = 9;
   }
   
   // Set camera position and target

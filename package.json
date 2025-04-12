@@ -4,7 +4,7 @@
   "description": "A 3D implementation of the Tower of Hanoi game that runs in the browser.",
   "main": "src/js/main.js",
   "scripts": {
-    "start": "live-server src",
+    "start": "live-server --host=0.0.0.0 --port=8080 src",
     "build": "webpack --mode production"
   },
   "dependencies": {
